@@ -15,7 +15,7 @@ import com.amazonaws.services.sns.model.PublishRequest;
 import com.example.demo.api.Service.UserService;
 import com.example.demo.api.models.LoginResponse;
 import com.example.demo.api.models.User;
-
+import com.example.demo.exception.UserIsExistentException;
 
 import java.util.List;
 
@@ -38,11 +38,17 @@ public class UserServiceImpl implements UserService {
     }
 
     public User save(User user, String passwd){
-      if ( user.getId() == null ){
+      if(user.getId() == null){
           user.setId(++userCount);
       }
+
+      if(findByName(user.getUser()) != null){
+            throw new UserIsExistentException("name=" + user.getUser());
+        }
+      
       UserAuthentificationServiceImpl.saveUserPasswd(user, passwd);
       users.add(user);
+
       try {
           PublishRequest request = new PublishRequest()
                                        .withMessage(String.format("user %s created", user.getName()))
@@ -52,6 +58,22 @@ public class UserServiceImpl implements UserService {
           LOG.error("Error {} occurred while publishing to sns", e.getLocalizedMessage());
     } 
       return user;
+    }
+
+    public String deleteByName(String userName, String authString){ 
+        Iterator<User> iterator = users.iterator();
+        while (iterator.hasNext()) {
+            User user = iterator.next();
+            if(user.getUser().equals(userName)) {
+                if(UserAuthentificationServiceImpl.isAuthorized(authString).isState()){
+                    iterator.remove();
+                    return String.format("user %s deleted", userName);
+                } else {
+                    return "authentication error";
+                }
+            }
+        }
+        return null;
     }
 
     public LoginResponse checkAuthCredentials(String authString) {
@@ -72,18 +94,6 @@ public class UserServiceImpl implements UserService {
         for (User user:users) {
             if (user.getUser().equals(userName)){
                  return user;
-            }
-        }
-        return null;
-    }
-
-    public User deleteById(int id){ 
-        Iterator<User> iterator = users.iterator();
-        while (iterator.hasNext()) {
-            User user = iterator.next();
-            if ( user.getId() == id ) {
-                iterator.remove();
-                return user;
             }
         }
         return null;

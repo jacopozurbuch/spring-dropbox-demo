@@ -1,6 +1,7 @@
 package com.example.demo.api.Service;
 import java.util.List;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.demo.api.models.FileObject;
 import com.example.demo.api.models.User;
 
@@ -8,7 +9,7 @@ public interface FileStorageService {
 
     FileObject saveAsBlobFile(User user, String assetName, byte[] asset);
 
-    List<FileObject> findAll(User user);
+    List<S3ObjectSummary> listAll(String userPath);
 
     //Asset findById(User user, UUID id);
 

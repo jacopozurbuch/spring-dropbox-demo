@@ -1,2 +1,11 @@
-/bin
+### Java ###
+*.class
+
+### Gradle ###
+/.gradle
+/build
+
+### vscode ###
 /.vscode
+
+/bin

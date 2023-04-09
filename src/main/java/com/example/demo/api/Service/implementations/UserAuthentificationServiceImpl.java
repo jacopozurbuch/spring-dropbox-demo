@@ -27,13 +27,18 @@ public class UserAuthentificationServiceImpl  {
             byte[] providedHash = GenerateHash.generate(passwd, userAuth.getSalt());
 
             if (GenerateHash.compareHash(savedHash, providedHash)) {
-                return new LoginResponse("password is valid", false);
+                return new LoginResponse("password is valid", true);
             } else {
                 return new LoginResponse("password is not valid", false);
             }
         } 
       }
       return new LoginResponse("user not found", false);    
+    }
+
+    public static String getUserName(String encodedAuthString) {
+      String[] authString = decodeString(encodedAuthString);
+      return authString[0];
     }
 
     public static void saveUserPasswd(User user, String passwd) {

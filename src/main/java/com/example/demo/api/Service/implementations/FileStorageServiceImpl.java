@@ -17,7 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.demo.api.Service.FileStorageService;
 import com.example.demo.api.models.FileObject;
 import com.example.demo.api.models.User;
@@ -50,12 +52,12 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 
     @Async
-    public void save(final MultipartFile multipartFile) {
+    public void save(String userPath, String fileName, final MultipartFile multipartFile) {
         try {
             final File file = convertMultiPartFileToFile(multipartFile);
-            final String fileName = LocalDateTime.now() + "_" + file.getName();
+            final String fullFileName = userPath + "/" + LocalDateTime.now() + "_" + fileName;
             LOG.info("Uploading file with name {}", fileName);
-            final PutObjectRequest putObjectRequest = new PutObjectRequest(s3BucketName, fileName, file);
+            final PutObjectRequest putObjectRequest = new PutObjectRequest(s3BucketName, fullFileName, file);
             amazonS3.putObject(putObjectRequest);
             Files.delete(file.toPath()); // Remove the file locally created in the project folder
         } catch (AmazonServiceException e) {
@@ -65,13 +67,24 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
-    public List<FileObject> findAll(User user){
-        return assets;
+    public List<S3ObjectSummary> listAll(String userPath){
+        List<S3ObjectSummary> objectSummary = new ArrayList<>();
+        try {
+            ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+                                                        .withBucketName(s3BucketName)
+                                                        .withPrefix(userPath)
+                                                        .withMaxKeys(10);
+                                                    
+            objectSummary =  amazonS3.listObjects(listObjectsRequest).getObjectSummaries();
+        } catch(AmazonServiceException e){
+            LOG.error("Error {} occurred while uploading file", e.getLocalizedMessage());
+        }
+        return objectSummary;
     }
 
     public FileObject saveAsBlobFile(User user,String assetName, byte[] blob) {
         FileObject asset = new FileObject(assetName, blob);
-        this.assets.add(asset);
+        FileStorageServiceImpl.assets.add(asset);
         return asset;
     }
 

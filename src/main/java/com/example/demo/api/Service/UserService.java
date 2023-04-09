@@ -15,6 +15,6 @@ public interface UserService {
 
     User findById(int id);
 
-    User deleteById(int id);
+    String deleteByName(String userName, String authString);
 
 }

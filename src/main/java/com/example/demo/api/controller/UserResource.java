@@ -67,12 +67,12 @@ public class UserResource {
 
     }
 
-    @DeleteMapping(path="users/{id}")
-    public void deleteUser(@PathVariable int id){
-      User user = service.deleteById(id);
-      if(user == null) {
-        throw new UserNotFoundException("id=" + id);
+    @DeleteMapping(path="users/{userName}")
+    public String deleteUser(@PathVariable String userName, @RequestHeader String authorization){
+      String message = service.deleteByName(userName, authorization);
+      if(message == null) {
+        throw new UserNotFoundException("name=" + userName);
       }
+      return message;
     }
-
 }
