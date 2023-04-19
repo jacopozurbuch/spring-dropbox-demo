@@ -4,8 +4,10 @@ import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.auth0.jwt.algorithms.Algorithm;
 import com.example.demo.api.models.Auth;
 import com.example.demo.api.models.LoginResponse;
 import com.example.demo.api.models.User;
@@ -15,6 +17,13 @@ import com.example.demo.api.utils.GenerateHash;
 public class UserAuthentificationServiceImpl  {
     
     private static Map<String, Auth> userAuthList = new Hashtable<>();
+
+    private static Algorithm algorithm;
+
+    @Value("${jwt.secret}")
+    public void setAlgorithmStatic(String secret){
+      algorithm = Algorithm.HMAC256(secret);
+    }
 
     public static LoginResponse isAuthorized(String encodedAuthString) {
       String[] authString = decodeString(encodedAuthString);
