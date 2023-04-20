@@ -17,13 +17,25 @@ repositories {
 }
 
 dependencies {
+	
+	// spring boot
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+	// javax
 	implementation 'javax.validation:validation-api:2.0.1.Final'
+
+	// aws 
 	implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
 	implementation 'com.amazonaws:aws-java-sdk-s3'
 	implementation 'com.amazonaws:aws-java-sdk-sns'
+
+	// jwt 
     implementation 'com.auth0:java-jwt:4.4.0'
+
+	//
+	runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {

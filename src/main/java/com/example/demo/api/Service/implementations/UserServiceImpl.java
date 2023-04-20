@@ -99,4 +99,8 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    public int update(User user) {
+        return 0;
+    }
+
 }

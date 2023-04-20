@@ -5,11 +5,9 @@ import com.example.demo.api.models.User;
 
 public interface UserService {
 
-    // int count();
-
     User save(User user, String passwd);
 
-    //int update(User user);
+    int update(User user);
 
     List<User> findAll();
 
