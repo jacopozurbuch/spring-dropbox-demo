@@ -2,7 +2,6 @@ package com.example.demo.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,15 +13,17 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.example.demo.api.Service.implementations.UserAuthentificationServiceImpl;
 import com.example.demo.api.Service.implementations.UserServiceImpl;
 import com.example.demo.api.models.LoginResponse;
 import com.example.demo.api.models.User;
-import com.example.demo.exception.UserNotFoundException;
+import com.example.demo.exception.AuthException;
 
 import javax.validation.Valid;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class UserResource {
@@ -40,23 +41,22 @@ public class UserResource {
       return service.findAll();
     }
 
-    @GetMapping(path = "/users/{name}")
-    public User retrieveOneUser(@PathVariable String name){
-
-      User user = service.findByName(name);
-      if(user == null) {
-        throw new UserNotFoundException("name = " + name);
+    @GetMapping(path = "/user")
+    public User retrieveOneUser(@RequestHeader String Authorization){
+      Optional<String> validation = UserAuthentificationServiceImpl.verifyToken(Authorization);
+      if(!validation.isPresent()) {
+        throw new AuthException("user not found or token invalid");
       }
-      return user;
+      return service.findByName(validation.get());
     }
 
     @GetMapping(path="/login")
-    public ResponseEntity<String> login(@RequestHeader String Authorization){
+    public ResponseEntity<LoginResponse> login(@RequestHeader String Authorization){
       LoginResponse logIn = service.checkAuthCredentials(Authorization);
       if (!logIn.isState()) {
-        return new ResponseEntity<String>(logIn.getMessage(), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<LoginResponse>(logIn, HttpStatus.UNAUTHORIZED);
       }
-      return new ResponseEntity<String>(logIn.getMessage(), HttpStatus.ACCEPTED);
+      return new ResponseEntity<LoginResponse>(logIn, HttpStatus.ACCEPTED);
     }
 
     @PostMapping(path="/users")
