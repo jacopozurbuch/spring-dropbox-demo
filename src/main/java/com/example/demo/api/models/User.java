@@ -7,34 +7,54 @@ import java.util.UUID;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 
+import com.example.demo.api.utils.GenerateHash;
+
 
 public class User {
 
     private Integer id;
 
-    @Size(min = 3, message = "this is the actual name")
+    @Size(min = 5, message = "this is the actual name")
     private String name;
 
-    @Size(min = 3, message = "this is the actual surname")
-    private String surname;
-
-    @Size(min = 7, message = "this is the user name")
+    @Size(min = 3, message = "this is the user name")
     private String user;
+
+    @Size(min = 8)
+    private String email;
+
+    private Auth password;
 
     @Past
     private LocalDate birthday;
 
     private List<UUID> assets;
 
-    protected User() {
+    public User() {
         
     }
 
-    public User(String name, String surname, String userName, LocalDate birthday) {
+    public User(String name, String user, LocalDate birthday, String email, String password) {
         this.name = name;
-        this.surname = surname;
+        this.user = user;
+        this.birthday = birthday;
+        this.email = email;
+        this.setPassword(password);
+    }
+
+    public User(String name, String userName, LocalDate birthday, String email) {
+        this.name = name;
         this.user = userName;
         this.birthday = birthday;
+        this.email = email;
+    }
+
+    public User(Integer id, String name, String userName, LocalDate birthday, String email) {
+        this.id = id;
+        this.name = name;
+        this.user = userName;
+        this.birthday = birthday;
+        this.email = email;
     }
 
     public Integer getId() {
@@ -77,12 +97,22 @@ public class User {
         return assets;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getEmail() {
+        return email;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Auth getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        byte[] salt = GenerateHash.generateSalt();
+        byte[] hash = GenerateHash.generate(password, salt);
+        this.password = new Auth(hash, salt);
     }
 
 }

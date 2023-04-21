@@ -34,8 +34,8 @@ dependencies {
 	// jwt 
     implementation 'com.auth0:java-jwt:4.4.0'
 
-	//
-	runtimeOnly 'com.h2database:h2'
+	// db
+	implementation 'org.postgresql:postgresql:42.5.4'
 }
 
 tasks.named('test') {

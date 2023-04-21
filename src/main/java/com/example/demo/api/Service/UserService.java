@@ -5,14 +5,14 @@ import com.example.demo.api.models.User;
 
 public interface UserService {
 
-    User save(User user, String passwd);
+    void save(User user);
 
-    int update(User user);
+    int update(User user, String userName);
 
     List<User> findAll();
 
-    User findById(int id);
+    User findByName(String userName);
 
-    String deleteByName(String userName, String authString);
+    int deleteByName(String userName, String authString);
 
 }

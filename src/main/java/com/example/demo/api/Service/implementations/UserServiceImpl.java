@@ -1,8 +1,5 @@
 package com.example.demo.api.Service.implementations;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +12,14 @@ import com.amazonaws.services.sns.model.PublishRequest;
 import com.example.demo.api.Service.UserService;
 import com.example.demo.api.models.LoginResponse;
 import com.example.demo.api.models.User;
-import com.example.demo.exception.UserIsExistentException;
+import com.example.demo.api.repository.UserRepository;
+import com.example.demo.exception.UserExistentException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
-
-    private static List<User> users = new ArrayList<>();
-    private static int userCount = 0;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -33,21 +29,18 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private AmazonSNS amazonSNS;
 
+    @Autowired
+    public UserRepository userRepository;
+
     public List<User> findAll(){
-        return users;
+        return userRepository.findAll();
     }
 
-    public User save(User user, String passwd){
-      if(user.getId() == null){
-          user.setId(++userCount);
-      }
-
+    public void save(User user){
       if(findByName(user.getUser()) != null){
-            throw new UserIsExistentException("name=" + user.getUser());
+            throw new UserExistentException("name=" + user.getUser());
         }
-      
-      UserAuthentificationServiceImpl.saveUserPasswd(user, passwd);
-      users.add(user);
+      userRepository.save(user);
 
       try {
           PublishRequest request = new PublishRequest()
@@ -56,51 +49,30 @@ public class UserServiceImpl implements UserService {
           amazonSNS.publish(request); 
       } catch (AmazonServiceException e) {
           LOG.error("Error {} occurred while publishing to sns", e.getLocalizedMessage());
-    } 
-      return user;
+    }
+    return; 
     }
 
-    public String deleteByName(String userName, String authString){ 
-        Iterator<User> iterator = users.iterator();
-        while (iterator.hasNext()) {
-            User user = iterator.next();
-            if(user.getUser().equals(userName)) {
-                if(UserAuthentificationServiceImpl.isAuthorized(authString).isState()){
-                    iterator.remove();
-                    return String.format("user %s deleted", userName);
-                } else {
-                    return "authentication error";
-                }
-            }
-        }
-        return null;
+    public int deleteByName(String userName, String authString){
+        int num = userRepository.delete(userName); 
+        return num;
     }
 
     public LoginResponse checkAuthCredentials(String authString) {
         return UserAuthentificationServiceImpl.isAuthorized(authString);
     }
 
-
-    public User findById(int id){ 
-        for (User user:users) {
-            if (user.getId()==id){
-                 return user;
-            }
-        }
-        return null;
-    }
-
     public User findByName(String userName){ 
-        for (User user:users) {
-            if (user.getUser().equals(userName)){
-                 return user;
-            }
+        Optional<User> user = userRepository.findByName(userName);
+        if(user.isPresent()) {
+            return user.get();
         }
         return null;
     }
 
-    public int update(User user) {
-        return 0;
+    public int update(User user, String userName) {
+        int num = userRepository.update(user, userName);
+        return num;
     }
 
 }
