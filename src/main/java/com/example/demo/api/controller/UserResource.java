@@ -79,7 +79,6 @@ public class UserResource {
       return ResponseEntity.ok().build();
     }
 
-
     @DeleteMapping(path="users/{userName}")
     public ResponseEntity<Object> deleteUser(@PathVariable String userName){
       int userNumber = service.deleteByName(userName, "");

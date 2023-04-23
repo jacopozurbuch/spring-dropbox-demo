@@ -50,7 +50,7 @@ public class UserRepository {
     }
 
     public int delete(String userName) {
-        String sql = "DELETE FROM public.users WHERE username = ?";
+        String sql = "DELETE FROM public.users WHERE username = (?)";
         return jdbcTemplate.update(sql, userName);
      }
 

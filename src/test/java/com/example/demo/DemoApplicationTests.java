@@ -1,10 +1,46 @@
 package com.example.demo;
 
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+
+import com.example.demo.api.Service.implementations.UserServiceImpl;
+import com.example.demo.api.controller.UserResource;
+
+
+@WebMvcTest(UserResource.class)
 class DemoApplicationTests {
+
+	@Autowired
+	private MockMvc mockMvc;
+
+	@MockBean
+    private UserServiceImpl service;
+
+	@Test
+	public void setUserTest() throws Exception {
+
+		JSONObject testUser = new JSONObject()
+		.put("name", "manuel black")
+		.put("user", "manuel")
+		.put("birthday", "1950-01-03")
+		.put("email", "manuel.black@gmail.com")
+		.put("password", "test1234");
+
+		this.mockMvc.perform(post("/users")
+		                     .contentType(MediaType.APPLICATION_JSON)
+							 .content(testUser.toString()))
+					.andDo(print())		 
+		            .andExpect(status().isCreated());
+	}
 
 	@Test
 	void contextLoads() {
