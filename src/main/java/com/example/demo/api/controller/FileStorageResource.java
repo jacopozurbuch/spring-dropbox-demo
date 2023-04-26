@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.demo.api.Service.implementations.FileStorageServiceImpl;
-import com.example.demo.api.Service.implementations.UserAuthentificationServiceImpl;
 import com.example.demo.api.Service.implementations.UserServiceImpl;
-import com.example.demo.api.models.LoginResponse;
 import com.example.demo.api.models.User;
-import com.example.demo.exception.UserException;
 
 
 @RestController
