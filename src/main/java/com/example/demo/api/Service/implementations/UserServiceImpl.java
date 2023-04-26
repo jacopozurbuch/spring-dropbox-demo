@@ -13,6 +13,7 @@ import com.example.demo.api.Service.UserService;
 import com.example.demo.api.models.LoginResponse;
 import com.example.demo.api.models.User;
 import com.example.demo.api.repository.UserRepository;
+import com.example.demo.exception.AuthException;
 import com.example.demo.exception.UserExistentException;
 
 import java.util.List;
@@ -62,8 +63,12 @@ public class UserServiceImpl implements UserService {
         return UserAuthentificationServiceImpl.isAuthorized(authString);
     }
 
-    public User findByName(String userName){ 
-        Optional<User> user = userRepository.findByName(userName);
+    public User findByName(String Authorization){
+        Optional<String> validation = UserAuthentificationServiceImpl.verifyToken(Authorization);
+        if(!validation.isPresent()) {
+          throw new AuthException("user not found or token invalid");
+        } 
+        Optional<User> user = userRepository.findByName(validation.get());
         if(user.isPresent()) {
             return user.get();
         }

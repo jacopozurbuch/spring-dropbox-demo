@@ -13,27 +13,25 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.example.demo.api.Service.implementations.UserAuthentificationServiceImpl;
 import com.example.demo.api.Service.implementations.UserServiceImpl;
 import com.example.demo.api.models.LoginResponse;
 import com.example.demo.api.models.User;
-import com.example.demo.exception.AuthException;
+import com.example.demo.exception.UserNotFoundException;
 
 import javax.validation.Valid;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-public class UserResource {
+public class UserRessource {
 
     @Autowired
     private UserServiceImpl service;
 
     @GetMapping(path = "/hello")
     public String helloWorld(){
-      return "Hello from App";
+      return "Hello from Demo-Dropbox";
     }
 
     @GetMapping("/users")
@@ -42,12 +40,12 @@ public class UserResource {
     }
 
     @GetMapping(path = "/user")
-    public User retrieveOneUser(@RequestHeader String Authorization){
-      Optional<String> validation = UserAuthentificationServiceImpl.verifyToken(Authorization);
-      if(!validation.isPresent()) {
-        throw new AuthException("user not found or token invalid");
+    public ResponseEntity<User> retrieveOneUser(@RequestHeader String Authorization){
+      try {
+        return new ResponseEntity<User>(service.findByName(Authorization), HttpStatus.OK);
+      } catch(UserNotFoundException e) {
+        return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
       }
-      return service.findByName(validation.get());
     }
 
     @GetMapping(path="/login")

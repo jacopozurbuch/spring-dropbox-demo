@@ -114,7 +114,7 @@ public class UserAuthentificationServiceImpl  {
           
     }
  
-    private static String createToken(String userName, String issuer) {
+    public static String createToken(String userName, String issuer) {
       return JWT.create()
                 .withIssuer(issuer)
                 .withSubject("Baeldung Details")

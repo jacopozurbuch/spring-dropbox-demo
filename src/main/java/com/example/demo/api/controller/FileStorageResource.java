@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -31,16 +34,10 @@ public class FileStorageResource {
     @Autowired
     private FileStorageServiceImpl asset;
 
-    @GetMapping(path = "/files")
+    @GetMapping(path = "/s3/files")
     public List<String> retrieveOneUser(@RequestHeader("Authorization") String Authorization){
 
-      LoginResponse mess = UserAuthentificationServiceImpl.isAuthorized(Authorization);
-        
-      if(mess.isState() == false) {
-        throw new UserException(mess.getMessage());
-      }
-
-      User user = userService.findByName(UserAuthentificationServiceImpl.getUserName(Authorization));
+      User user = userService.findByName(Authorization);
       List<S3ObjectSummary> assets = asset.listAll(user.getUser());
 
       List<String> s3ObjectKeys = new ArrayList<>();
@@ -50,28 +47,30 @@ public class FileStorageResource {
       return s3ObjectKeys;
     }
 
-    @PostMapping(path="/upload")
-    public String upload(@RequestParam("asset") String assetName,@RequestHeader("Authorization") String Authorization, @RequestPart MultipartFile file){
+    @PostMapping(path="/s3/upload")
+    public String upload(@RequestHeader("Authorization") String Authorization, @RequestPart MultipartFile file){
         
-        LoginResponse mess = UserAuthentificationServiceImpl.isAuthorized(Authorization);
-        
-        if(mess.isState() == false) {
-          throw new UserException(mess.getMessage());
-        }
-
-        User user = userService.findByName(UserAuthentificationServiceImpl.getUserName(Authorization));
-
-        if(asset.findByName(assetName) != null) {
-          return "asset with name " + assetName + " already exists!";
-        }
+        User user = userService.findByName(Authorization);
 
         try {
-            this.asset.saveAsBlobFile(user, assetName, file.getBytes());
-            this.asset.save(user.getUser(), assetName, file);
+            this.asset.saveAsBlobFile(user, file.getOriginalFilename(), file.getBytes());
+            this.asset.save(user.getUser(), file.getOriginalFilename(), file);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return "Successfull";
+    }
+
+    @DeleteMapping(path="/s3/delete")
+    public ResponseEntity<Object> delete(@RequestParam("asset") String assetName, @RequestHeader("Authorization") String Authorization) {
+
+      User user = userService.findByName(Authorization);
+      try {
+        this.asset.deleteByName(assetName, user.getUser());
+      } catch (IOException e){
+        ResponseEntity.notFound().build();
+      }
+      return ResponseEntity.ok().build();
     }
 
 

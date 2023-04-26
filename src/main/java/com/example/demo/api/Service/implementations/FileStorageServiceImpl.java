@@ -18,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.demo.api.Service.FileStorageService;
 import com.example.demo.api.models.FileObject;
@@ -55,7 +57,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     public void save(String userPath, String fileName, final MultipartFile multipartFile) {
         try {
             final File file = convertMultiPartFileToFile(multipartFile);
-            final String fullFileName = userPath + "/" + LocalDateTime.now() + "_" + fileName;
+            final String fullFileName = userPath + "/" + fileName;
             LOG.info("Uploading file with name {}", fileName);
             final PutObjectRequest putObjectRequest = new PutObjectRequest(s3BucketName, fullFileName, file);
             amazonS3.putObject(putObjectRequest);
@@ -88,13 +90,16 @@ public class FileStorageServiceImpl implements FileStorageService {
         return asset;
     }
 
-    public FileObject findByName(String assetName){ 
-        for (FileObject asset:assets) {
-            if (asset.getAssetName().equals(assetName)){
-                 return asset;
-            }
-        }
-        return null;
+    public FileObject getByName(String assetName, String userName) throws IOException { 
+        S3ObjectInputStream inputStream = amazonS3.getObject(s3BucketName, userName + "/" + assetName).getObjectContent();
+        byte[] contentAsBlob = inputStream.readAllBytes();
+        inputStream.close();
+        return new FileObject(assetName, contentAsBlob);
+    }
+
+    public boolean deleteByName(String assetName, String userName) throws IOException {
+        amazonS3.deleteObject(s3BucketName, userName + "/" + assetName);
+        return true;
     }
 
 }

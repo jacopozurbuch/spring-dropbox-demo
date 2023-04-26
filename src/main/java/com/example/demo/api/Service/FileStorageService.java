@@ -1,4 +1,5 @@
 package com.example.demo.api.Service;
+import java.io.IOException;
 import java.util.List;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -11,12 +12,8 @@ public interface FileStorageService {
 
     List<S3ObjectSummary> listAll(String userPath);
 
-    //Asset findById(User user, UUID id);
+    FileObject getByName(String assetName, String userName) throws IOException;
 
-    //Asset deleteById(User user, int id);
-
-    FileObject findByName(String assetName);
-
-    //Asset deleteByName(User user, String assetName);
+    boolean deleteByName(String assetName, String userName) throws IOException;
 
 }
